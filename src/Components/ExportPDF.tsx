@@ -1,12 +1,12 @@
-import * as XLSX from 'xlsx';
 import { read, utils } from 'xlsx';
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import jsPDF from 'jspdf';
+import './style.css'
 
 export const ExportPDF = () => {
 
     const [url, setUrl] = useState<string>('');
-    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
@@ -48,7 +48,7 @@ export const ExportPDF = () => {
                     yPosition += 10;
                 }
 
-                const company = 'Societe XY';
+                const company = 'Societe XYZ';
 
                 const textWidth = doc.getTextWidth(company);
                 const rightPosition = pageWidth - textWidth - 10;
@@ -62,37 +62,53 @@ export const ExportPDF = () => {
         }
     };
 
-    const exportToPDF = async () => {
+    const exportToPDF = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         try {
-            const data = await getDataFromExcel();
-            generatePdf(data)
+            setLoading(true);
+            setTimeout(async() => {
+                const exportPdf = async () => {
+                    const data = await getDataFromExcel();
+                    generatePdf(data);
+                }
+                await exportPdf()
+                .then(() => {
+                    setLoading(false);
+                })
+                .catch((e) => {
+                    console.log('[ERROR]:', e);
+                    setLoading(false);
+                })
+            }, 2000);
         } catch (e) {
             console.log('[ERROR]:', e);
+            setLoading(false);
         }
-
-        // const doc = new jsPDF();
-        // doc.text("Excel Data:", 10, 10);
-    
-        // data.forEach((row, index) => {
-        //   doc.text(JSON.stringify(row), 10, 20 + (index * 10));
-        // });
-    
-        // doc.save('data.pdf');
     };
 
     return <div className="container mt-4">
-        <h1 className="text-center">Import Excel</h1>
-        <div className="mb-3">
-            <div className="form-group">
-                <label htmlFor="fileInput">Entrer l'url de googlesheet en csv</label>
-            </div>
-            <input className="form-control" type="url" value={url} onChange={handleChange} />
+        <h1 className="text-center text-bg-dark">Import Excel</h1>
+        <div className="form-container">
+            <form onSubmit={exportToPDF}>
+                <div className="mb-3">
+                    <div className="form-group">
+                        <label htmlFor="fileInput" className="text-bg-dark">Entrer l'url de googlesheet en csv</label>
+                    </div>
+                    <input className="form-control" type="url" value={url} onChange={handleChange} />
+                </div>
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                >
+                    {!loading && <>Exporter en PDF</>}
+                    {loading && (
+                        <div className="spinner-border" role="status">
+                            <span className="visually-hidden">Chargement...</span>
+                        </div>
+                    )}
+                </button>
+            </form>
         </div>
-        <button
-            onClick={exportToPDF}
-            className="btn btn-primary"
-        >
-            Export to PDF
-        </button>
     </div>
 }
