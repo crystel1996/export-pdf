@@ -8,16 +8,31 @@ export const ExportPDF = () => {
     const [url, setUrl] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<any[]>([]);
+    const [filteredData, setFilteredData] = useState<any[]>([]);
     const [filter, setFilter] = useState<string>('');
 
-    const handleFilter = (e: MouseEvent<HTMLElement>) => {
-        e.stopPropagation();
-        const filterData: any[] = (data || []).filter((val) => {
-            return Object.values(val).some((el: any) => {
-                return el.toLowerCase().includes(filter)
+    const handleFilter = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if(filter) {
+            const keys = Object.keys(data[0] || {});
+            const filterData: any[] = (data || []).filter((val) => {
+                // return Object.values(val).some((el: any) => {
+                //     console.log(filter)
+                //     if(typeof el === 'string') {
+                //         return el.toLowerCase().includes(filter)
+                //     }
+                //     return `${el}`.includes(filter)
+                // });
+                return keys.some((k) => {
+                    console.log(filter)
+                    return `${val[k]}`.includes(filter);
+                })
             });
-        });
-        setData(filterData);
+            setFilteredData(filterData);
+            return;
+        } else {
+            setFilteredData(data);
+        }
     }
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -90,10 +105,12 @@ export const ExportPDF = () => {
                 await exportPdf()
                 .then(() => {
                     setLoading(false);
+                    setFilter('');
                 })
                 .catch((e) => {
                     console.log('[ERROR]:', e);
                     setLoading(false);
+                    setFilter('')
                 })
             }, 2000);
         } catch (e) {
@@ -110,6 +127,7 @@ export const ExportPDF = () => {
                 const exportPdf = async () => {
                     const data = await getDataFromExcel();
                     setData(data);
+                    setFilteredData(data);
                 }
                 await exportPdf()
                 .then(() => {
@@ -153,30 +171,32 @@ export const ExportPDF = () => {
                 <h2 className="text-center text-bg-dark m-4">Liste des imports</h2>
                 <div className="d-flex justify-content-between full-width mt-3">
                     <div className="d-flex">
-                        <input className="form-control" type="text" value={filter} onChange={handleChangeFilter} placeholder='Rechercher...' />
-                        <button onClick={handleFilter} type="submit" className="mx-2 btn btn-primary">
-                            Filtrer
-                        </button>
+                        <form className="d-flex" onSubmit={handleFilter}>
+                            <input className="form-control" type="text" value={filter} onChange={handleChangeFilter} placeholder='Rechercher...' />
+                            <button type="submit" className="mx-2 btn btn-primary">
+                                Filtrer
+                            </button>
+                        </form>
                     </div>
-                    {data.length > 0 && (
+                    {filteredData.length > 0 && (
                         <div>
                             <button onClick={exportToPDF} className="btn btn-primary">Exporter</button>
                         </div>
                     )}
                 </div>
-                {data.length > 0 && (
+                {filteredData.length > 0 && (
                     <table className="table table-dark table-striped table-sm my-2">
                         <thead>
                             <tr>
-                                {Object.keys(data[0]).map((el, index) => {
+                                {Object.keys(filteredData[0]).map((el, index) => {
                                     return <th key={index} scope="col">{el}</th>
                                 })}
                             </tr>
                         </thead>
                         <tbody>
-                            {data.map((el, index) => {
+                            {filteredData.map((el, index) => {
                                 return <tr key={`${index}`}>
-                                    {Object.keys(data[0]).map((keyVal) => {
+                                    {Object.keys(filteredData[0]).map((keyVal) => {
                                         return <td key={keyVal}>{el[keyVal]}</td>
                                     })}
                                 </tr>
@@ -184,7 +204,7 @@ export const ExportPDF = () => {
                         </tbody>
                     </table>
                 )}
-                {data.length === 0 && (
+                {filteredData.length === 0 && (
                     <h6 className="my-4 text-center text-bg-dark empty-list">Liste vide</h6>
                 )}
             </div>
