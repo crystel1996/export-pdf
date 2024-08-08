@@ -7,6 +7,7 @@ export const ExportPDF = () => {
 
     const [url, setUrl] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [data, setData] = useState<any[]>([]);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
@@ -109,36 +110,45 @@ export const ExportPDF = () => {
                     )}
                 </button>
             </form>
-            <h2 className="text-center text-bg-dark m-4">Liste des imports</h2>
-            <div className="d-flex justify-content-between full-width mt-3">
-                <div>
-                    <form className="d-flex">
-                        <input className="form-control" type="text" value={url} onChange={handleChange} placeholder='Rechercher...' />
-                        <button type="submit" className="mx-2 btn btn-primary">
-                            Filtrer
-                        </button>
-                    </form>
+            <div>
+                <h2 className="text-center text-bg-dark m-4">Liste des imports</h2>
+                <div className="d-flex justify-content-between full-width mt-3">
+                    <div>
+                        <form className="d-flex">
+                            <input className="form-control" type="text" value={url} onChange={handleChange} placeholder='Rechercher...' />
+                            <button type="submit" className="mx-2 btn btn-primary">
+                                Filtrer
+                            </button>
+                        </form>
+                    </div>
+                    {data.length > 0 && (
+                        <div>
+                            <button className="btn btn-primary">Exporter</button>
+                        </div>
+                    )}
                 </div>
-                <div>
-                    <button className="btn btn-primary">Exporter</button>
-                </div>
+                {data.length > 0 && (
+                    <table className="table table-dark table-striped table-sm my-2">
+                        <thead>
+                            <tr>
+                                <th scope="col">First</th>
+                                <th scope="col">Last</th>
+                                <th scope="col">Handle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                )}
+                {data.length === 0 && (
+                    <h6 className="my-4 text-center text-bg-dark empty-list">Liste vide</h6>
+                )}
             </div>
-            <table className="table table-dark table-striped table-sm my-2">
-                <thead>
-                    <tr>
-                        <th scope="col">First</th>
-                        <th scope="col">Last</th>
-                        <th scope="col">Handle</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 }

@@ -8,3 +8,7 @@
 .form-container button {
     width: 100%;
 }
+
+.empty-list {
+    opacity: 0.5;
+}
