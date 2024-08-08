@@ -44,6 +44,7 @@ export const ExportPDF = () => {
                 doc.setFontSize(12);
                 let yPosition = 60;
                 for (const [key, value] of Object.entries(element)) {
+                    
                     doc.text(`${key}: ${value}`, 14, yPosition);
                     yPosition += 10;
                 }
@@ -57,7 +58,6 @@ export const ExportPDF = () => {
 
                 doc.save(`Contrat du travail du candidat ${number }`);
                 number++;
-                console.log(element);
             });
         }
     };
@@ -101,7 +101,7 @@ export const ExportPDF = () => {
                     className="btn btn-primary"
                     disabled={loading}
                 >
-                    {!loading && <>Exporter en PDF</>}
+                    {!loading && <>Importer</>}
                     {loading && (
                         <div className="spinner-border" role="status">
                             <span className="visually-hidden">Chargement...</span>
@@ -109,6 +109,36 @@ export const ExportPDF = () => {
                     )}
                 </button>
             </form>
+            <h2 className="text-center text-bg-dark m-4">Liste des imports</h2>
+            <div className="d-flex justify-content-between full-width mt-3">
+                <div>
+                    <form className="d-flex">
+                        <input className="form-control" type="text" value={url} onChange={handleChange} placeholder='Rechercher...' />
+                        <button type="submit" className="mx-2 btn btn-primary">
+                            Filtrer
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <button className="btn btn-primary">Exporter</button>
+                </div>
+            </div>
+            <table className="table table-dark table-striped table-sm my-2">
+                <thead>
+                    <tr>
+                        <th scope="col">First</th>
+                        <th scope="col">Last</th>
+                        <th scope="col">Handle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Mark</td>
+                        <td>Otto</td>
+                        <td>@mdo</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 }
