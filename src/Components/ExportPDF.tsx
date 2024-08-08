@@ -1,5 +1,5 @@
 import { read, utils } from 'xlsx';
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState , MouseEvent} from "react";
 import jsPDF from 'jspdf';
 import './style.css'
 
@@ -8,10 +8,26 @@ export const ExportPDF = () => {
     const [url, setUrl] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<any[]>([]);
+    const [filter, setFilter] = useState<string>('');
+
+    const handleFilter = (e: MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+        const filterData: any[] = (data || []).filter((val) => {
+            return Object.values(val).some((el: any) => {
+                return el.toLowerCase().includes(filter)
+            });
+        });
+        setData(filterData);
+    }
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
         setUrl(e.target.value)
+    };
+
+    const handleChangeFilter = (e: ChangeEvent<HTMLInputElement>) => {
+        e.stopPropagation();
+        setFilter(e.target.value)
     };
 
     const getDataFromExcel = async () => {
@@ -63,14 +79,37 @@ export const ExportPDF = () => {
         }
     };
 
-    const exportToPDF = async (e: FormEvent<HTMLFormElement>) => {
+    const exportToPDF = async (e: MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+        try {
+            setLoading(true);
+            setTimeout(async() => {
+                const exportPdf = async () => {
+                    generatePdf(data);
+                }
+                await exportPdf()
+                .then(() => {
+                    setLoading(false);
+                })
+                .catch((e) => {
+                    console.log('[ERROR]:', e);
+                    setLoading(false);
+                })
+            }, 2000);
+        } catch (e) {
+            console.log('[ERROR]:', e);
+            setLoading(false);
+        }
+    };
+
+    const importExcel = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
             setLoading(true);
             setTimeout(async() => {
                 const exportPdf = async () => {
                     const data = await getDataFromExcel();
-                    generatePdf(data);
+                    setData(data);
                 }
                 await exportPdf()
                 .then(() => {
@@ -90,7 +129,7 @@ export const ExportPDF = () => {
     return <div className="container mt-4">
         <h1 className="text-center text-bg-dark">Import Excel</h1>
         <div className="form-container">
-            <form onSubmit={exportToPDF}>
+            <form onSubmit={importExcel}>
                 <div className="mb-3">
                     <div className="form-group">
                         <label htmlFor="fileInput" className="text-bg-dark">Entrer l'url de googlesheet en csv</label>
@@ -113,17 +152,15 @@ export const ExportPDF = () => {
             <div>
                 <h2 className="text-center text-bg-dark m-4">Liste des imports</h2>
                 <div className="d-flex justify-content-between full-width mt-3">
-                    <div>
-                        <form className="d-flex">
-                            <input className="form-control" type="text" value={url} onChange={handleChange} placeholder='Rechercher...' />
-                            <button type="submit" className="mx-2 btn btn-primary">
-                                Filtrer
-                            </button>
-                        </form>
+                    <div className="d-flex">
+                        <input className="form-control" type="text" value={filter} onChange={handleChangeFilter} placeholder='Rechercher...' />
+                        <button onClick={handleFilter} type="submit" className="mx-2 btn btn-primary">
+                            Filtrer
+                        </button>
                     </div>
                     {data.length > 0 && (
                         <div>
-                            <button className="btn btn-primary">Exporter</button>
+                            <button onClick={exportToPDF} className="btn btn-primary">Exporter</button>
                         </div>
                     )}
                 </div>
@@ -131,17 +168,19 @@ export const ExportPDF = () => {
                     <table className="table table-dark table-striped table-sm my-2">
                         <thead>
                             <tr>
-                                <th scope="col">First</th>
-                                <th scope="col">Last</th>
-                                <th scope="col">Handle</th>
+                                {Object.keys(data[0]).map((el, index) => {
+                                    return <th key={index} scope="col">{el}</th>
+                                })}
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                            </tr>
+                            {data.map((el, index) => {
+                                return <tr key={`${index}`}>
+                                    {Object.keys(data[0]).map((keyVal) => {
+                                        return <td key={keyVal}>{el[keyVal]}</td>
+                                    })}
+                                </tr>
+                            })}
                         </tbody>
                     </table>
                 )}
